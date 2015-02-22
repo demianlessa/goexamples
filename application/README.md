@@ -2,7 +2,7 @@
 
 This simple project illustrates the abstraction of applications into an
 Application interface with flexible startup options, following a strong
-encapsulation mechanism where neither implementations not global variables
+encapsulation mechanism where neither implementations nor global variables
 are exposed to the client code.
 
    1) Definition of an Application interface type embedding a Runnable interface.
