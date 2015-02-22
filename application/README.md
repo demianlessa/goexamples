@@ -29,6 +29,7 @@ are exposed to the client code.
               WithOption6(val []float64) Builder 
            }
 
+
       This provides a simple and fluent mechanism for setting application options.
 
    3) It is obvious that the Builder interface enables encapsulation of Application 
@@ -53,6 +54,7 @@ are exposed to the client code.
               appBuilder = builderFunc
            }
 
+
       Again, it is obvious that by calling the SetAppBuilderFunc implementors are
       able to specify how an application is built without disclosing implementation
       details.
@@ -74,8 +76,7 @@ are exposed to the client code.
       sensible default building options. However, there are many occasions in which
       we need to change those, as during testing, when overriding startup options
       using runtime environments or command line arguments, etc. The patterns used
-      above allow this in a relatively simple manner, as the code below illustrates
-      (from main.go).
+      above support this in a relatively simple manner, as illustrated below.
 
            func main() {
               fmt.Println("Starting application.")
