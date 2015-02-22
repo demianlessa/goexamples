@@ -5,8 +5,9 @@ Application interface with flexible startup options, following a strong
 encapsulation mechanism where neither implementations nor global variables
 are exposed to the client code.
 
-   1) Definition of an Application interface type embedding a Runnable interface.
+   1. Definition of an Application interface type embedding a Runnable interface.
 
+```Go
            type Runnable interface {
               Run() error
            }
@@ -14,11 +15,13 @@ are exposed to the client code.
            type Application interface {
               Runnable
            }
+```
 
-   2) Definition of a Builder interface type to allow specification of application
+   2. Definition of a Builder interface type to allow specification of application
       options, without exposing implementation details. For this example, we use a
       builder with six options.
 
+```Go
            type Builder interface {
               Build() Application
               WithOption1(val string) Builder 
@@ -28,17 +31,18 @@ are exposed to the client code.
               WithOption5(val []int) Builder 
               WithOption6(val []float64) Builder 
            }
-
+```
 
       This provides a simple and fluent mechanism for setting application options.
 
-   3) It is obvious that the Builder interface enables encapsulation of Application 
+   3. It is obvious that the Builder interface enables encapsulation of Application 
       object implementations. In order to encapsualte Builder object implementations 
       themselves, a functional approach is used. The general idea is simple-- define
       a function type that returns a Builder instance (i.e., a constructor function
       for Builder objects) and let implementors of Builder and Application objects
       "install" their Builder constructor functions.
 
+```Go
            type AppBuilderFunc func() Builder
 
            var (
@@ -53,15 +57,16 @@ are exposed to the client code.
            func SetAppBuilderFunc(builderFunc AppBuilderFunc) {
               appBuilder = builderFunc
            }
-
+```
 
       Again, it is obvious that by calling the SetAppBuilderFunc implementors are
       able to specify how an application is built without disclosing implementation
       details.
 
-   4) Global application instances are obtained from a central point, using 
+   4. Global application instances are obtained from a central point, using 
       the GetApp function.
 
+```Go
            func GetApp() Application {
               if app == nil {
                  if appBuilder == nil {
@@ -71,13 +76,15 @@ are exposed to the client code.
               }
               return app
            }
+```
 
-   4) We assume that the implementor of Builder and Application objects provide 
+   5. We assume that the implementor of Builder and Application objects provide 
       sensible default building options. However, there are many occasions in which
       we need to change those, as during testing, when overriding startup options
       using runtime environments or command line arguments, etc. The patterns used
       above support this in a relatively simple manner, as illustrated below.
 
+```Go
            func main() {
               fmt.Println("Starting application.")
 
@@ -111,6 +118,7 @@ are exposed to the client code.
               fmt.Println("Running the application...")
               a.Run()
            }
+```
 
       The customization pattern is straightforward: get the installed Builder constructor
       function, use it to create a customized builder constructor function and install it
