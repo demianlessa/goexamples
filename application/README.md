@@ -1,9 +1,6 @@
 # Application Proof-of-Concept
 
-This simple project illustrates the abstraction of applications into an
-Application interface with flexible startup options, following a strong
-encapsulation mechanism where neither implementations nor global variables
-are exposed to the client code.
+This simple project illustrates the abstraction of applications into an Application interface with flexible startup options, following a strong encapsulation mechanism where neither implementations nor global variables are exposed to the client code.
 
 1) Definition of an Application interface type embedding a Runnable interface.
 
@@ -17,9 +14,7 @@ type Application interface {
 }
 ```
 
-2) Definition of a Builder interface type to allow specification of application
-   options, without exposing implementation details. For this example, we use a
-   builder with six options.
+2) Definition of a Builder interface type to allow specification of application options, without exposing implementation details. For this example, we use a builder with six options.
 
 ```Go
 type Builder interface {
@@ -33,14 +28,9 @@ type Builder interface {
 }
 ```
 
-   This provides a simple and fluent mechanism for setting application options.
+This provides a simple and fluent mechanism for setting application options.
 
-3) It is obvious that the Builder interface enables encapsulation of Application 
-   object implementations. In order to encapsualte Builder object implementations 
-   themselves, a functional approach is used. The general idea is simple-- define
-   a function type that returns a Builder instance (i.e., a constructor function
-   for Builder objects) and let implementors of Builder and Application objects
-   "install" their Builder constructor functions.
+3) It is obvious that the Builder interface enables encapsulation of Application object implementations. In order to encapsualte Builder object implementations themselves, a functional approach is used. The general idea is simple-- define a function type that returns a Builder instance (i.e., a constructor function for Builder objects) and let implementors of Builder and Application objects "install" their Builder constructor functions.
 
 ```Go
 type AppBuilderFunc func() Builder
@@ -59,13 +49,9 @@ func SetAppBuilderFunc(builderFunc AppBuilderFunc) {
 }
 ```
 
-      Again, it is obvious that by calling the SetAppBuilderFunc implementors are
-      able to specify how an application is built without disclosing implementation
-      details.
+Again, it is obvious that by calling the SetAppBuilderFunc implementors are able to specify how an application is built without disclosing implementation details.
 
-4) Global application instances are obtained from a central point, using the GetApp
-   function. The lazy initialization pattern guarantees that Builder and Application
-   objects are created only when used for the first time.
+4) Global application instances are obtained from a central point, using the GetApp function. The lazy initialization pattern guarantees that Builder and Application objects are created only when used for the first time.
 
 ```Go
 func GetApp() Application {
@@ -79,11 +65,7 @@ func GetApp() Application {
 }
 ```
 
-5) We assume that the implementor of Builder and Application objects provide 
-   sensible default building options. However, there are many occasions in which
-   we need to change those, as during testing, when overriding startup options
-   using runtime environments or command line arguments, etc. The patterns used
-   above support this in a relatively simple manner, as illustrated below.
+5) We assume that the implementor of Builder and Application objects provide sensible default building options. However, there are many occasions in which we need to change those, as during testing, when overriding startup options using runtime environments or command line arguments, etc. The patterns used above support this in a relatively simple manner, as illustrated below.
 
 ```Go
 func main() {
@@ -121,16 +103,8 @@ func main() {
 }
 ```
 
-The customization pattern is straightforward: get the installed Builder constructor
-function, use it to create a customized builder constructor function and install it
-globally. 
+The customization pattern is straightforward: get the installed Builder constructor function, use it to create a customized builder constructor function and install it globally. 
 
-Note that we install the implementation Builder explicitly. This would be typically
-done in the init() function of the Builder implementation package, allowing us to 
-remove all references to the implementation package in main.go. Unfortunately, this 
-would cause the implementation package not to be compiled/linked into our app! Thus,
-we must either install it explicitly (like in the above example) or use the Go idiom
-"include-package-for-side-effects". This idiom is typically used when a registration 
-mechanism is used, such as our case of registering a Builder constructor function.
+Note that we install the implementation Builder explicitly. This would be typically done in the init() function of the Builder implementation package, allowing us to remove all references to the implementation package in main.go. Unfortunately, this would cause the implementation package not to be compiled/linked into our app! Thus, we must either install it explicitly (like in the above example) or use the Go idiom "include-package-for-side-effects". This idiom is typically used when a registration mechanism is used, such as our case of registering a Builder constructor function.
 
 Hope you enjoy the code. Any comments/criticisms are welcome. :)
