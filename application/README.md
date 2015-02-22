@@ -16,8 +16,8 @@ are exposed to the client code.
            }
 
    2) Definition of a Builder interface type to allow specification of application
-      options, without exposing implementation details. For this example, we show
-      a builder with six options.
+      options, without exposing implementation details. For this example, we use a
+      builder with six options.
 
            type Builder interface {
               Build() Application
