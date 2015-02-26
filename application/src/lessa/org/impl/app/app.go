@@ -6,86 +6,103 @@ import (
    model "lessa/org/app"
 )
 
-type Options struct {
-   Option1 string
-   Option2 int
-   Option3 float64
-   Option4 []string
-   Option5 []int
-   Option6 []float64
+// private options, exposed indirectly via the Builder interface
+// options are embedded by builder and application to promote
+// implementation reuse
+type options struct {
+   option1 string
+   option2 int
+   option3 float64
+   option4 []string
+   option5 []int
+   option6 []float64
 }
 
+// builder has options
 type builder struct {
-   Options
+   options
 }
 
+// application has options
 type application struct {
-   Options
+   options
 }
 
+// allow clients to install a default options builder
 func InstallAppBuilderFunc() {
    model.SetAppBuilderFunc(defaultBuilder)
 }
 
-func (o Options) String() string {
+// pretty print
+func (o options) String() string {
    js, _ := json.MarshalIndent(o, "", "   ")
    return string(js)
 }
 
+// dummy
 func (a application) Run() error {
    fmt.Print(a.String())
    return nil
 }
 
-func defaultOptions() Options {
-   return Options{
-      Option1: "default",
-      Option2: 666,
-      Option3: 666.666,
-      Option4: []string{"default1","default2"},
-      Option5: []int{666, 999},
-      Option6: []float64{666.999, 999.666},
+// default options used by the default builder
+func defaultoptions() options {
+   return options{
+      option1: "default",
+      option2: 666,
+      option3: 666.666,
+      option4: []string{"default1","default2"},
+      option5: []int{666, 999},
+      option6: []float64{666.999, 999.666},
    }
 }
 
+// default builder
 func defaultBuilder() model.Builder {
    return builder{
-      Options: defaultOptions(),
+      options: defaultoptions(),
    }
 }
 
+// creates an application by passing a copy of the builder's options
 func (b builder) Build() model.Application {
    return application {
-      Options: b.Options,
+      options: b.options,
    }
 }
 
+// update the internal options
 func (b builder) WithOption1(val string) model.Builder {
-   b.Option1 = val
+   b.option1 = val
    return b
 }
 
+// update the internal options
 func (b builder) WithOption2(val int) model.Builder {
-   b.Option2 = val
+   b.option2 = val
    return b
 }
 
+// update the internal options
 func (b builder) WithOption3(val float64) model.Builder {
-   b.Option3 = val
+   b.option3 = val
    return b
 }
 
+// update the internal options
 func (b builder) WithOption4(val []string) model.Builder {
-   b.Option4 = val
+   b.option4 = val
    return b
 }
 
+// update the internal options
 func (b builder) WithOption5(val []int) model.Builder {
-   b.Option5 = val
+   b.option5 = val
    return b
 }
 
+// update the internal options
 func (b builder) WithOption6(val []float64) model.Builder {
-   b.Option6 = val
+   b.option6 = val
    return b
 }
