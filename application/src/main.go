@@ -7,17 +7,17 @@ import (
 )
 
 func main() {
-   fmt.Println("Starting application.")
+   fmt.Println("[main] Starting main.")
 
-   fmt.Println("Installing builder func...")
+   fmt.Println("[main] Installing builder func...")
    impl.InstallAppBuilderFunc()
 
-   fmt.Println("Retrieving builder func...")
+   fmt.Println("[main] Retrieving builder constructor func...")
    defBuilderFunc := app.GetAppBuilderFunc()
 
-   fmt.Println("Here's what the default builder looks like", defBuilderFunc())
+   fmt.Println("[main] The default builder: ", defBuilderFunc())
 
-   fmt.Println("Installing a customized builder func...")
+   fmt.Println("[main] Installing a customized builder constructor func...")
    app.SetAppBuilderFunc(func() app.Builder {
       return defBuilderFunc().
                 WithOption1("custom").
@@ -28,14 +28,17 @@ func main() {
                 WithOption6([]float64{333.666, 666.333})
    })
 
-   fmt.Println("Retrieving builder func...")
+   fmt.Println("[main] Retrieving builder constructor func...")
    newBuilderFunc := app.GetAppBuilderFunc()
 
-   fmt.Println("Here's what the customized builder looks like", newBuilderFunc())
+   fmt.Println("[main] The customized builder: ", newBuilderFunc())
 
-   fmt.Println("Creating application...")
+   fmt.Println("[main] Retrieving the application object.")
    a := app.GetApp()
 
-   fmt.Println("Running the application...")
+   fmt.Println("[main] Running the application.")
    a.Run()
+
+   fmt.Println("")
+   fmt.Println("[main] Exiting.")
 }

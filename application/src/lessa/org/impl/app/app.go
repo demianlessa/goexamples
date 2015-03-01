@@ -3,19 +3,23 @@ package app
 import (
    "encoding/json"
    "fmt"
+   "os"
+   "os/signal"
+   "syscall"
    model "lessa/org/app"
 )
 
 // private options, exposed indirectly via the Builder interface
 // options are embedded by builder and application to promote
 // implementation reuse
+// public members on the type buys us json marshalling support
 type options struct {
-   option1 string
-   option2 int
-   option3 float64
-   option4 []string
-   option5 []int
-   option6 []float64
+   Option1 string
+   Option2 int
+   Option3 float64
+   Option4 []string
+   Option5 []int
+   Option6 []float64
 }
 
 // builder has options
@@ -26,6 +30,8 @@ type builder struct {
 // application has options
 type application struct {
    options
+   done    chan bool
+   sigs    chan os.Signal
 }
 
 // allow clients to install a default options builder
@@ -41,19 +47,60 @@ func (o options) String() string {
 
 // dummy
 func (a application) Run() error {
-   fmt.Print(a.String())
+
+   fmt.Println()
+   fmt.Println("[impl/application] Registering for specified signal types.")
+   signal.Notify(a.sigs, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+   fmt.Println("[impl/application] Setting up signal handling.")
+   go a.waitForSignal()
+
+   fmt.Println("[impl/application] Waiting for a registered signal.")
+   <- a.done
+
+   fmt.Println("[impl/application] Received and processed signal.")
+   return nil
+}
+
+func (a application) waitForSignal() {
+
+      // waiting for a registered signal
+      sig := <-a.sigs
+
+      fmt.Println()
+      fmt.Println("[impl/application] Signal received:", sig)
+
+      // cleaning up allocated resources
+      a.cleanup()
+
+      // releasing the runnable
+      a.done <- true
+}
+
+func (a application) cleanup() error {
+
+   fmt.Println("[impl/application] Cleaning up prior to stopping.")
+   return nil
+}
+
+func (a application) Stop() error {
+
+   fmt.Println("[impl/application] Sending an interrupt signal.")
+   a.sigs <- os.Interrupt
+
+   fmt.Println("[impl/application] Stop completed.")
    return nil
 }
 
 // default options used by the default builder
 func defaultoptions() options {
    return options{
-      option1: "default",
-      option2: 666,
-      option3: 666.666,
-      option4: []string{"default1","default2"},
-      option5: []int{666, 999},
-      option6: []float64{666.999, 999.666},
+      Option1: "default",
+      Option2: 666,
+      Option3: 666.666,
+      Option4: []string{"default1","default2"},
+      Option5: []int{666, 999},
+      Option6: []float64{666.999, 999.666},
    }
 }
 
@@ -68,41 +115,43 @@ func defaultBuilder() model.Builder {
 func (b builder) Build() model.Application {
    return application {
       options: b.options,
+      sigs:    make(chan os.Signal, 1),
+      done:    make(chan bool, 1),
    }
 }
 
 // update the internal options
 func (b builder) WithOption1(val string) model.Builder {
-   b.option1 = val
+   b.Option1 = val
    return b
 }
 
 // update the internal options
 func (b builder) WithOption2(val int) model.Builder {
-   b.option2 = val
+   b.Option2 = val
    return b
 }
 
 // update the internal options
 func (b builder) WithOption3(val float64) model.Builder {
-   b.option3 = val
+   b.Option3 = val
    return b
 }
 
 // update the internal options
 func (b builder) WithOption4(val []string) model.Builder {
-   b.option4 = val
+   b.Option4 = val
    return b
 }
 
 // update the internal options
 func (b builder) WithOption5(val []int) model.Builder {
-   b.option5 = val
+   b.Option5 = val
    return b
 }
 
 // update the internal options
 func (b builder) WithOption6(val []float64) model.Builder {
-   b.option6 = val
+   b.Option6 = val
    return b
 }

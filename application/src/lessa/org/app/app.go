@@ -5,12 +5,26 @@ import (
    "fmt"
 )
 
+// an object capable of running a task (single responsibility)
 type Runnable interface {
    Run() error
 }
 
-type Application interface {
+// an object capable of running and stopping a task (single responsibility)
+type Stoppable interface {
    Runnable
+   Stop() error
+}
+
+// an object capable of running, stopping, and restarting a task (single responsibility)
+type Graceful interface {
+   Stoppable
+   Restart() error
+}
+
+// an application object can choose the runnable interface(s) it support
+type Application interface {
+   Stoppable
 }
 
 type Builder interface {
