@@ -5,7 +5,8 @@ import (
    "fmt"
    "os"
    "os/signal"
-   "syscall"
+   //"syscall"
+   "sync"
    model "lessa/org/app"
 )
 
@@ -25,11 +26,13 @@ type options struct {
 // builder has options
 type builder struct {
    options
+   jobs    []model.Job
 }
 
 // application has options
 type application struct {
    options
+   jobs    []model.Job
    done    chan bool
    sigs    chan os.Signal
 }
@@ -50,31 +53,65 @@ func (a application) Run() error {
 
    fmt.Println()
    fmt.Println("[impl/application] Registering for specified signal types.")
-   signal.Notify(a.sigs, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+   signal.Notify(a.sigs)
 
    fmt.Println("[impl/application] Setting up signal handling.")
    go a.waitForSignal()
 
-   fmt.Println("[impl/application] Waiting for a registered signal.")
+   if len(a.jobs) > 0 {
+      fmt.Println("[impl/application] Spawning jobs.")
+      go a.runJobs()
+   }
+
+   fmt.Println("[impl/application] Waiting for jobs or a registered signal.")
    <- a.done
 
    fmt.Println("[impl/application] Received and processed signal.")
    return nil
 }
 
+func (a application) runJobs() {
+
+   wg := sync.WaitGroup{}
+
+   for _, each := range a.jobs {
+      wg.Add(1)
+      go func(job model.Job) {
+         // clean up correctly even if we panic
+         defer func() {
+            if err := recover(); err != nil {
+               wg.Done()
+               panic(err)
+            }
+         }()
+         job(a)
+         wg.Done()
+      }(each)
+   }
+
+   wg.Wait()
+
+   a.done <- true
+}
+
 func (a application) waitForSignal() {
 
+   select {
       // waiting for a registered signal
-      sig := <-a.sigs
+      case sig := <-a.sigs:
 
-      fmt.Println()
-      fmt.Println("[impl/application] Signal received:", sig)
+         fmt.Println()
+         fmt.Println("[impl/application] Signal received:", sig)
 
-      // cleaning up allocated resources
-      a.cleanup()
+         // cleaning up allocated resources
+         a.cleanup()
 
-      // releasing the runnable
-      a.done <- true
+         // releasing the runnable
+         a.done <- true
+
+         // remove from select
+         a.sigs = nil
+   }
 }
 
 func (a application) cleanup() error {
@@ -115,9 +152,16 @@ func defaultBuilder() model.Builder {
 func (b builder) Build() model.Application {
    return application {
       options: b.options,
-      sigs:    make(chan os.Signal, 1),
+      jobs:    b.jobs,
       done:    make(chan bool, 1),
+      sigs:    make(chan os.Signal, 1),
    }
+}
+
+// update the internal jobs
+func (b builder) WithJobs(jobs... model.Job) model.Builder {
+   b.jobs = jobs
+   return b
 }
 
 // update the internal options

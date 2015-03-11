@@ -4,6 +4,7 @@ import (
    "fmt"
    "lessa/org/app"
    impl "lessa/org/impl/app"
+   "time"
 )
 
 func main() {
@@ -20,6 +21,24 @@ func main() {
    fmt.Println("[main] Installing a customized builder constructor func...")
    app.SetAppBuilderFunc(func() app.Builder {
       return defBuilderFunc().
+                WithJobs(func(ctx app.Context) error { 
+                   fmt.Println("") 
+                   fmt.Println("------------") 
+                   fmt.Println("Hello World!") 
+                   fmt.Println("------------") 
+                   fmt.Println("") 
+                   return nil
+                }, func(ctx app.Context) error { 
+                   fmt.Println("") 
+                   fmt.Println("--------------------") 
+                   fmt.Println("Hello Waiting World!") 
+                   fmt.Println("--------------------") 
+                   fmt.Println("") 
+                   for {
+                      time.Sleep(10*time.Second)
+                   }
+                   return nil
+                }).
                 WithOption1("custom").
                 WithOption2(333).
                 WithOption3(333.666).
