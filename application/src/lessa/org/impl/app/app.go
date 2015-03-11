@@ -87,7 +87,7 @@ func (a application) runJobs() {
 	  // then it is possible that the value of 'each' has already been modified
 	  go func(job model.Job) {
 
-	     defer wg.Done()
+         defer wg.Done()
          job(a)
       }(each)
    }
