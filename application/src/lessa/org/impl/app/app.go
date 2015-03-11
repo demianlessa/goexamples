@@ -75,17 +75,20 @@ func (a application) runJobs() {
    wg := sync.WaitGroup{}
 
    for _, each := range a.jobs {
+
+      // add the job to the list
       wg.Add(1)
-      go func(job model.Job) {
-         // clean up correctly even if we panic
-         defer func() {
-            if err := recover(); err != nil {
-               wg.Done()
-               panic(err)
-            }
-         }()
+
+	  // run each job in the background
+	  //
+	  // Note: we pass a copy of the 'each' variable as a parameter to the goroutine
+	  // to avoid non-determinism; using the value of 'each' directly in the body of
+	  // the goroutine would cause it to be evaluated only when effectively used; by
+	  // then it is possible that the value of 'each' has already been modified
+	  go func(job model.Job) {
+
+	     defer wg.Done()
          job(a)
-         wg.Done()
       }(each)
    }
 
